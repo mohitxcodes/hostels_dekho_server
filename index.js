@@ -22,12 +22,11 @@ app.use('/api/hostels', hostelRoutes);
 
 app.post('/api/leads', async (req, res) => {
   try {
-    const { name, email, phone } = req.body;
+    const { name, phone } = req.body;
     
     // Create new lead
     const newLead = new Lead({
       name,
-      email,
       phone
     });
 
@@ -40,7 +39,44 @@ app.post('/api/leads', async (req, res) => {
   }
 });
 
+app.get('/api/leads', async (req, res) => {
+  try {
+    const leads = await Lead.find().sort({ createdAt: -1 });
+    res.json({ success: true, count: leads.length, data: leads });
+  } catch (error) {
+    console.error('Error fetching leads:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch leads', error: error.message });
+  }
+});
+
+const Admin = require('./models/Admin');
+
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const admin = await Admin.findOne({ username, password });
+    if (admin) {
+      res.json({ success: true, token: 'fake-jwt-token-12345' });
+    } else {
+      res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
+  
+  // Seed default admin if none exists
+  try {
+    const adminCount = await Admin.countDocuments();
+    if (adminCount === 0) {
+      await Admin.create({ username: 'admin', password: 'password123' });
+      console.log('Default admin created (username: admin, password: password123)');
+    }
+  } catch (err) {
+    console.error('Failed to seed admin:', err);
+  }
 });
