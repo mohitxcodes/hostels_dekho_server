@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const Lead = require('./models/Lead');
 const hostelRoutes = require('./routes/hostelRoutes');
+const blogRoutes = require('./routes/blogRoutes');
 
 const app = express();
 
@@ -19,6 +20,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/hostel_de
 
 // Routes
 app.use('/api/hostels', hostelRoutes);
+app.use('/api/blogs', blogRoutes);
 
 app.post('/api/leads', async (req, res) => {
   try {
